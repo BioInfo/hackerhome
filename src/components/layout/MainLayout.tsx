@@ -31,6 +31,12 @@ export default function MainLayout({
   const bgColor = isDarkMode ? 'bg-[#1a1b1e]' : 'bg-gray-50';
   const borderColor = isDarkMode ? 'border-gray-800' : 'border-gray-200';
 
+  // Add a loading state that waits for the theme to be applied
+  React.useEffect(() => {
+    document.documentElement.style.opacity = '1';
+    document.documentElement.style.transition = 'opacity 0.2s ease-in-out';
+  }, []);
+
   return (
     <div className={`min-h-screen ${bgColor}`}>
       <Header 

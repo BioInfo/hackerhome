@@ -1,61 +1,104 @@
 import { useState, useEffect, useCallback } from 'react';
-import type { NewsItem } from '../types';
 
-interface UseNewsSourceOptions {
-  fetchFn: (page: number) => Promise<NewsItem[]>;
+interface UseNewsSourceProps {
+  fetchFn: (page: number) => Promise<any[]>;
   enabled: boolean;
-  initialPage?: number;
+  cacheKey?: string;
+  cacheDuration?: number; // in milliseconds
 }
 
-export function useNewsSource({ fetchFn, enabled, initialPage = 1 }: UseNewsSourceOptions) {
-  const [items, setItems] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [page, setPage] = useState(initialPage);
+interface CacheEntry {
+  data: any[];
+  timestamp: number;
+}
 
-  const fetchData = useCallback(async (pageNum: number, isLoadingMore: boolean = false) => {
+export function useNewsSource({
+  fetchFn,
+  enabled,
+  cacheKey,
+  cacheDuration = 5 * 60 * 1000 // 5 minutes default
+}: UseNewsSourceProps) {
+  const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [error, setError] = useState<Error | null>(null);
+
+  const getCachedData = useCallback(() => {
+    if (!cacheKey) return null;
+    const cached = localStorage.getItem(cacheKey);
+    if (!cached) return null;
+
+    const { data, timestamp }: CacheEntry = JSON.parse(cached);
+    const isStale = Date.now() - timestamp > cacheDuration;
+    return { data, isStale };
+  }, [cacheKey, cacheDuration]);
+
+  const setCachedData = useCallback((data: any[]) => {
+    if (!cacheKey) return;
+    const entry: CacheEntry = {
+      data,
+      timestamp: Date.now()
+    };
+    localStorage.setItem(cacheKey, JSON.stringify(entry));
+  }, [cacheKey]);
+
+  const fetchData = useCallback(async (pageNum: number) => {
     if (!enabled) return;
 
     try {
-      if (isLoadingMore) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
+      // If it's the first page, check cache first
+      if (pageNum === 1 && cacheKey) {
+        const cached = getCachedData();
+        if (cached) {
+          setItems(cached.data);
+          setLoading(false);
+          
+          // If data is stale, fetch in background
+          if (cached.isStale) {
+            const freshData = await fetchFn(pageNum);
+            setItems(freshData);
+            setCachedData(freshData);
+          }
+          return;
+        }
       }
 
       const data = await fetchFn(pageNum);
       
-      setItems(prev => isLoadingMore ? [...prev, ...data] : data);
-      setError(null);
+      if (pageNum === 1) {
+        setItems(data);
+        if (cacheKey) {
+          setCachedData(data);
+        }
+      } else {
+        setItems(prev => [...prev, ...data]);
+      }
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Failed to fetch data'));
     } finally {
       setLoading(false);
       setLoadingMore(false);
     }
-  }, [fetchFn, enabled]);
+  }, [enabled, fetchFn, cacheKey, getCachedData, setCachedData]);
 
   useEffect(() => {
-    // Only fetch initial data when enabled changes or on mount
-    if (enabled) {
-      fetchData(initialPage);
-    }
-  }, [enabled, initialPage, fetchData]);
+    setLoading(true);
+    fetchData(1);
+  }, [fetchData]);
 
   const loadMore = useCallback(() => {
-    if (!loading && !loadingMore) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      fetchData(nextPage, true);
-    }
+    if (loading || loadingMore) return;
+    setLoadingMore(true);
+    setPage(prev => prev + 1);
+    fetchData(page + 1);
   }, [loading, loadingMore, page, fetchData]);
 
-  return { 
-    items, 
-    loading, 
-    loadingMore, 
-    error, 
-    loadMore 
+  return {
+    items,
+    loading,
+    loadingMore,
+    error,
+    loadMore
   };
 }

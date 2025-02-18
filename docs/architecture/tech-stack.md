@@ -328,3 +328,106 @@ main
 - Safari: >=14
 - Edge: >=90
 - Mobile Browsers: iOS 14+, Android 7+ 
+
+# Technical Stack Documentation
+
+## Performance Optimizations
+
+### Loading Strategy
+- Progressive loading with React Suspense
+- Stale-while-revalidate caching pattern
+- Local storage cache with configurable durations:
+  - News items: 5 minutes
+  - GitHub trending: 1 hour
+  - Search results: 1 minute
+
+### Component Loading
+- Lazy-loaded route components
+- Suspense boundaries for each content section
+- Skeleton loading states during data fetching
+- Optimized grid layout with dynamic columns
+
+### Caching Implementation
+```typescript
+interface CacheEntry {
+  data: any[];
+  timestamp: number;
+}
+
+// Cache configuration
+const CACHE_DURATIONS = {
+  news: 5 * 60 * 1000,    // 5 minutes
+  github: 60 * 60 * 1000, // 1 hour
+  search: 60 * 1000       // 1 minute
+};
+
+// Cache retrieval with staleness check
+const getCachedData = (key: string, duration: number) => {
+  const cached = localStorage.getItem(key);
+  if (!cached) return null;
+
+  const { data, timestamp }: CacheEntry = JSON.parse(cached);
+  const isStale = Date.now() - timestamp > duration;
+  return { data, isStale };
+};
+```
+
+### Loading States
+- Initial page load optimization
+- Dark mode transition smoothing
+- Content section progressive loading
+- Skeleton screens for loading states
+
+### Bundle Optimization
+- Route-based code splitting
+- Dynamic imports for non-critical components
+- Optimized dependency imports
+- Efficient asset loading
+
+## Implementation Details
+
+### Component Architecture
+- Modular component structure
+- Efficient prop management
+- Memoized components where beneficial
+- Optimized re-renders
+
+### Data Flow
+- Progressive data loading
+- Cached API responses
+- Optimistic UI updates
+- Background data refresh
+
+### State Management
+- Local component state
+- React Context for global state
+- Efficient state updates
+- Minimized re-renders
+
+## Monitoring & Metrics
+
+### Performance Metrics
+- Page load time: < 2 seconds
+- First contentful paint: < 1 second
+- Time to interactive: < 3 seconds
+- Smooth scrolling: 60fps
+
+### Cache Metrics
+- Cache hit rate
+- Cache freshness
+- Storage usage
+- Update frequency
+
+## Future Optimizations
+
+### Planned Improvements
+- Service worker implementation
+- Advanced prefetching
+- Improved bundle splitting
+- Enhanced caching strategies
+
+### Monitoring
+- Performance tracking
+- Error monitoring
+- Usage analytics
+- Cache effectiveness 

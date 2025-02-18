@@ -1,5 +1,6 @@
 import React from 'react';
 import { Home, Search, Settings, Moon, Sun, Infinity, List } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import SettingsDialog from './SettingsDialog';
 import type { SourceConfig } from '../types';
 
@@ -38,10 +39,10 @@ export default function Header({
     <header className={`${bgColor} p-4 border-b ${borderColor}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className={`flex items-center ${textColor}`}>
+          <Link to="/" className={`flex items-center ${textColor} hover:opacity-80 transition-opacity`}>
             <Home className="w-6 h-6 mr-2" />
             <span className="text-xl font-semibold">HackerHome</span>
-          </div>
+          </Link>
         </div>
 
         <div className="flex items-center space-x-4">
