@@ -2,6 +2,19 @@
 
 A modern, fast, and customizable tech news aggregator that brings together the best content from multiple sources including Hacker News, DEV.to, and GitHub trending repositories.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0+-blue.svg)](https://www.typescriptlang.org/)
+[![React](https://img.shields.io/badge/React-18.0+-61dafb.svg)](https://reactjs.org/)
+[![Vite](https://img.shields.io/badge/Vite-5.0+-646cff.svg)](https://vitejs.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.0+-38bdf8.svg)](https://tailwindcss.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+[![Code Style: Prettier](https://img.shields.io/badge/Code_Style-Prettier-ff69b4.svg)](https://prettier.io/)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/BioInfo/hackerhome/ci.yml?branch=main)](https://github.com/BioInfo/hackerhome/actions)
+[![GitHub issues](https://img.shields.io/github/issues/BioInfo/hackerhome)](https://github.com/BioInfo/hackerhome/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/BioInfo/hackerhome)](https://github.com/BioInfo/hackerhome/pulls)
+[![GitHub last commit](https://img.shields.io/github/last-commit/BioInfo/hackerhome)](https://github.com/BioInfo/hackerhome/commits/main)
+
 ## Features ✨
 
 - 📱 Responsive and accessible web application
