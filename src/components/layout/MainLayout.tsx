@@ -54,12 +54,34 @@ export default function MainLayout({
       <footer className={`border-t ${borderColor} mt-8 py-4`}>
         <div className="container mx-auto px-4 flex items-center justify-between text-gray-400 text-sm">
           <div className="flex items-center space-x-4">
-            <button className="hover:text-gray-200">SOURCE CODE</button>
+            <a 
+              href="https://github.com/BioInfo/hackerhome" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-gray-200 transition-colors"
+            >
+              SOURCE CODE
+            </a>
           </div>
           <div className="flex items-center space-x-4">
-            <button className="hover:text-gray-200">TERMS & CONDITIONS</button>
-            <button className="hover:text-gray-200">PRIVACY POLICY</button>
-            <button className="hover:text-gray-200">DATA SOURCES</button>
+            <a 
+              href="/terms" 
+              className="hover:text-gray-200 transition-colors"
+            >
+              TERMS & CONDITIONS
+            </a>
+            <a 
+              href="/privacy" 
+              className="hover:text-gray-200 transition-colors"
+            >
+              PRIVACY POLICY
+            </a>
+            <a 
+              href="/data-sources" 
+              className="hover:text-gray-200 transition-colors"
+            >
+              DATA SOURCES
+            </a>
           </div>
         </div>
       </footer>
