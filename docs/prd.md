@@ -22,7 +22,21 @@
 ## 3. Product Objectives
 
 ### Core Objective
-Provide a responsive, accessible, and performance-optimized platform for aggregating tech news and trending repositories.
+Provide a responsive, accessible, and performance-optimized platform for aggregating tech news and trending repositories, with dual interface modes to accommodate different user preferences and needs.
+
+### Interface Modes
+
+#### Simple Mode (Default)
+- Clean, minimalist interface focusing on essential information
+- Optimized for quick scanning and basic interactions
+- Streamlined content presentation with core metadata
+- Fast loading and efficient performance
+
+#### Advanced Mode
+- Rich, feature-complete interface for power users
+- Enhanced interactions and detailed information display
+- Customizable layouts and advanced filtering
+- Community features and interactive elements
 
 ### Key Goals
 - Seamlessly integrate multiple news sources with consistent presentation
@@ -37,11 +51,26 @@ Provide a responsive, accessible, and performance-optimized platform for aggrega
 - Support different feed types per source (e.g., top, latest, rising, etc.)
 
 ### User Interface & Interaction
+
+#### Core Features (Both Modes)
 - **Responsive Layout:** Adapt UI for desktops, tablets, and mobile devices using a grid-based system
 - **Theme Support:** Toggle between light and dark modes
 - **Search Functionality:** Real-time search across aggregated content with highlighted results
 - **Infinite Scrolling:** Automatically load additional content as the user scrolls (with an option to toggle)
 - **Settings & Customization:** Allow users to enable/disable and reorder news sources
+
+#### Simple Mode Features
+- **List View:** Clean, efficient list-based layout
+- **Essential Metadata:** Title, source, and timestamp
+- **Basic Interactions:** Direct link opening and subtle hover effects
+- **Quick Navigation:** Streamlined menu and minimal options
+
+#### Advanced Mode Features
+- **Layout Options:** Grid, masonry, and custom layouts
+- **Rich Metadata:** Comprehensive information display
+- **Enhanced Interactions:** Quick previews, actions, and animations
+- **Advanced Filtering:** Multiple criteria and sorting options
+- **Community Features:** Comments, reactions, and sharing
 
 ### Content Presentation
 - Display news items and repository cards with relevant metadata (e.g., title, source, points, stars, comments, time ago, etc.)

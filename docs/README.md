@@ -16,6 +16,7 @@ HackerHome is a modern, responsive web application that aggregates technology ne
 - [User Stories](features/user-stories.md) - Detailed user stories and acceptance criteria
 - [Requirements](features/requirements.md) - Functional and non-functional requirements
 - [Testing Guidelines](features/testing.md) - Testing strategies, test cases, and quality assurance procedures
+- [Content Enhancement](features/content-enhancement.md) - Comprehensive strategy for content optimization and data enrichment
 
 ### 3. Architecture & Implementation
 - [Project Architecture](architecture/README.md) - System architecture, design patterns, and code organization
@@ -32,6 +33,7 @@ HackerHome is a modern, responsive web application that aggregates technology ne
 - [Development Guide](development/README.md) - Setup instructions, development workflows, and coding standards
 - [Workflow Guide](development/workflow.md) - Git workflow, deployment procedures, and release management
 - [Best Practices](development/best-practices.md) - Coding conventions, performance optimization, and maintainability guidelines
+- [Performance Optimization](development/performance-optimization.md) - Comprehensive guide for performance and rendering optimization
 
 ## Getting Started
 
