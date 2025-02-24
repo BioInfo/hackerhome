@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { MouseEvent } from 'react';
 import NewsCard from '../NewsCard';
 import { CardSkeleton } from '../Skeleton';
 import { NewsItem } from '../../types';
@@ -17,6 +17,7 @@ interface NewsSectionProps {
   feed?: string;
   onFeedChange?: (feed: string) => void;
   feedOptions?: { value: string; label: string }[];
+  onItemClick?: (url: string) => void;
 }
 
 export default function NewsSection({
@@ -32,11 +33,21 @@ export default function NewsSection({
   scrollRef,
   feed,
   onFeedChange,
-  feedOptions
+  feedOptions,
+  onItemClick
 }: NewsSectionProps) {
   const bgColor = isDarkMode ? 'bg-gray-800' : 'bg-white';
   const textColor = isDarkMode ? 'text-white' : 'text-gray-900';
   const borderColor = isDarkMode ? 'border-gray-700' : 'border-gray-200';
+
+  const handleItemClick = (url: string, e: MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation(); // Prevent section click
+    if (onItemClick) {
+      onItemClick(url);
+    } else if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
 
   return (
     <div 
@@ -69,14 +80,24 @@ export default function NewsSection({
           ))
         ) : (
           items.map((item, index) => (
-            <a 
+            <div 
               key={`${title}-${item.id}-${feed}-${index}`}
-              href={item.url} 
-              target="_blank" 
-              rel="noopener noreferrer"
+              onClick={(e) => handleItemClick(item.url, e)}
+              role="button"
+              tabIndex={0}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  handleItemClick(item.url, e as unknown as MouseEvent<HTMLDivElement>);
+                }
+              }}
+              className="cursor-pointer"
             >
-              <NewsCard {...item} isDarkMode={isDarkMode} />
-            </a>
+              <NewsCard 
+                {...item} 
+                isDarkMode={isDarkMode} 
+                onClick={() => onItemClick ? onItemClick(item.url) : null}
+              />
+            </div>
           ))
         )}
         {!loading && !searchQuery && infiniteScrollEnabled && (

@@ -1,104 +1,192 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 
-interface UseNewsSourceProps {
-  fetchFn: (page: number) => Promise<any[]>;
+interface UseNewsSourceProps<T> {
+  fetchFn: (page: number) => Promise<T[]>;
   enabled: boolean;
   cacheKey?: string;
-  cacheDuration?: number; // in milliseconds
+  cacheDuration?: number;
 }
 
-interface CacheEntry {
-  data: any[];
-  timestamp: number;
+interface FetchState<T> {
+  data: T[];
+  loading: boolean;
+  loadingMore: boolean;
+  error: Error | null;
+  page: number;
 }
 
-export function useNewsSource({
+// In-memory cache
+const memoryCache = new Map<string, { data: any[]; timestamp: number }>();
+
+export function useNewsSource<T>({
   fetchFn,
   enabled,
   cacheKey,
-  cacheDuration = 5 * 60 * 1000 // 5 minutes default
-}: UseNewsSourceProps) {
-  const [items, setItems] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [page, setPage] = useState(1);
-  const [error, setError] = useState<Error | null>(null);
+  cacheDuration = 5 * 60 * 1000
+}: UseNewsSourceProps<T>) {
+  // Single state object to avoid race conditions
+  const [state, setState] = useState<FetchState<T>>({
+    data: [],
+    loading: false,
+    loadingMore: false,
+    error: null,
+    page: 1
+  });
 
-  const getCachedData = useCallback(() => {
-    if (!cacheKey) return null;
-    const cached = localStorage.getItem(cacheKey);
+  // Refs for cleanup and state tracking
+  const mounted = useRef(true);
+  const abortController = useRef<AbortController | null>(null);
+  const lastFetchTime = useRef<number>(0);
+  const isFetching = useRef(false);
+
+  // Cache management functions
+  const getFromCache = useCallback((key: string) => {
+    if (!key) return null;
+    const cached = memoryCache.get(key);
     if (!cached) return null;
 
-    const { data, timestamp }: CacheEntry = JSON.parse(cached);
-    const isStale = Date.now() - timestamp > cacheDuration;
-    return { data, isStale };
-  }, [cacheKey, cacheDuration]);
+    const isStale = Date.now() - cached.timestamp > cacheDuration;
+    return { data: cached.data, isStale };
+  }, [cacheDuration]);
 
-  const setCachedData = useCallback((data: any[]) => {
-    if (!cacheKey) return;
-    const entry: CacheEntry = {
+  const setToCache = useCallback((key: string, data: T[]) => {
+    if (!key) return;
+    memoryCache.set(key, {
       data,
       timestamp: Date.now()
-    };
-    localStorage.setItem(cacheKey, JSON.stringify(entry));
-  }, [cacheKey]);
+    });
+  }, []);
 
-  const fetchData = useCallback(async (pageNum: number) => {
-    if (!enabled) return;
+  // Main fetch function
+  const fetchData = useCallback(async (pageNum: number, isBackground = false) => {
+    if (!enabled || !mounted.current || isFetching.current) return;
+
+    // Rate limiting
+    const now = Date.now();
+    if (now - lastFetchTime.current < 1000) return;
+    lastFetchTime.current = now;
 
     try {
-      // If it's the first page, check cache first
+      isFetching.current = true;
+
+      // Cancel previous request
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+      abortController.current = new AbortController();
+
+      // Update loading state
+      if (!isBackground) {
+        setState(prev => ({
+          ...prev,
+          loading: pageNum === 1,
+          loadingMore: pageNum > 1
+        }));
+      }
+
+      // Check cache for first page
       if (pageNum === 1 && cacheKey) {
-        const cached = getCachedData();
-        if (cached) {
-          setItems(cached.data);
-          setLoading(false);
+        const cached = getFromCache(cacheKey);
+        if (cached?.data) {
+          setState(prev => ({
+            ...prev,
+            data: cached.data,
+            loading: false,
+            loadingMore: false
+          }));
+
+          if (!cached.isStale) return;
+        }
+      }
+
+      // Fetch new data
+      const newData = await fetchFn(pageNum);
+
+      // Validate response
+      if (!Array.isArray(newData)) {
+        throw new Error('Invalid data format: expected array');
+      }
+
+      // Update state if still mounted
+      if (mounted.current) {
+        setState(prev => {
+          const updatedData = pageNum === 1 ? newData : [...prev.data, ...newData];
           
-          // If data is stale, fetch in background
-          if (cached.isStale) {
-            const freshData = await fetchFn(pageNum);
-            setItems(freshData);
-            setCachedData(freshData);
+          // Cache first page data
+          if (pageNum === 1 && cacheKey && newData.length > 0) {
+            setToCache(cacheKey, newData);
           }
-          return;
-        }
-      }
 
-      const data = await fetchFn(pageNum);
-      
-      if (pageNum === 1) {
-        setItems(data);
-        if (cacheKey) {
-          setCachedData(data);
-        }
-      } else {
-        setItems(prev => [...prev, ...data]);
+          return {
+            ...prev,
+            data: updatedData,
+            loading: false,
+            loadingMore: false,
+            error: null
+          };
+        });
       }
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Failed to fetch data'));
+    } catch (error) {
+      if (mounted.current) {
+        console.error('Error fetching data:', error);
+        
+        // Try to use cached data on error
+        if (pageNum === 1 && cacheKey) {
+          const cached = getFromCache(cacheKey);
+          if (cached?.data) {
+            setState(prev => ({
+              ...prev,
+              data: cached.data,
+              loading: false,
+              loadingMore: false,
+              error: error instanceof Error ? error : new Error('Failed to fetch data')
+            }));
+            return;
+          }
+        }
+
+        setState(prev => ({
+          ...prev,
+          error: error instanceof Error ? error : new Error('Failed to fetch data'),
+          loading: false,
+          loadingMore: false
+        }));
+      }
     } finally {
-      setLoading(false);
-      setLoadingMore(false);
+      isFetching.current = false;
     }
-  }, [enabled, fetchFn, cacheKey, getCachedData, setCachedData]);
+  }, [enabled, fetchFn, cacheKey, getFromCache, setToCache]);
 
+  // Cleanup on unmount
   useEffect(() => {
-    setLoading(true);
-    fetchData(1);
-  }, [fetchData]);
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      if (abortController.current) {
+        abortController.current.abort();
+      }
+    };
+  }, []);
 
+  // Initial fetch
+  useEffect(() => {
+    if (enabled) {
+      fetchData(1);
+    }
+  }, [enabled, fetchData]);
+
+  // Load more function
   const loadMore = useCallback(() => {
-    if (loading || loadingMore) return;
-    setLoadingMore(true);
-    setPage(prev => prev + 1);
-    fetchData(page + 1);
-  }, [loading, loadingMore, page, fetchData]);
+    if (!enabled || state.loading || state.loadingMore || isFetching.current) return;
+    fetchData(state.page + 1);
+    setState(prev => ({ ...prev, page: prev.page + 1 }));
+  }, [enabled, state.loading, state.loadingMore, state.page, fetchData]);
 
   return {
-    items,
-    loading,
-    loadingMore,
-    error,
+    items: state.data,
+    loading: state.loading,
+    loadingMore: state.loadingMore,
+    error: state.error,
     loadMore
   };
 }

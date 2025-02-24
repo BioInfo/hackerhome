@@ -1,6 +1,7 @@
 import React from 'react';
-import { Moon, Sun, Infinity, List, GripHorizontal } from 'lucide-react';
+import { Moon, Sun, Infinity, List, GripHorizontal, Sparkles, Layout } from 'lucide-react';
 import type { SourceConfig } from '../types';
+import { useInterfaceMode } from '../features/interface-modes';
 
 interface SettingsDialogProps {
   isDarkMode: boolean;
@@ -21,12 +22,15 @@ export default function SettingsDialog({
   onSourceToggle,
   onSourcesReorder
 }: SettingsDialogProps) {
+  const { mode, setMode, config } = useInterfaceMode();
+  
   const bgColor = isDarkMode ? 'bg-gray-800' : 'bg-white';
   const textColor = isDarkMode ? 'text-gray-200' : 'text-gray-900';
   const borderColor = isDarkMode ? 'border-gray-700' : 'border-gray-200';
   const buttonBgColor = isDarkMode ? 'bg-gray-700' : 'bg-gray-100';
   const buttonHoverColor = isDarkMode ? 'hover:bg-gray-600' : 'hover:bg-gray-200';
   const descriptionColor = isDarkMode ? 'text-gray-400' : 'text-gray-500';
+  const selectedBgColor = isDarkMode ? 'bg-blue-600' : 'bg-blue-500';
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
     e.dataTransfer.setData('text/plain', index.toString());
@@ -56,6 +60,55 @@ export default function SettingsDialog({
           <form method="dialog">
             <button className="text-gray-400 hover:text-gray-300">&times;</button>
           </form>
+        </div>
+
+        {/* Interface Mode Section */}
+        <div className={`p-4 rounded-lg border ${borderColor}`}>
+          <div>
+            <h3 className="font-medium mb-2">Interface Mode</h3>
+            <p className={`text-sm ${descriptionColor} mb-4`}>
+              Choose between simple and advanced interface modes
+            </p>
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setMode('simple')}
+                className={`flex-1 p-3 rounded-lg ${mode === 'simple' ? selectedBgColor + ' text-white' : buttonBgColor} transition-colors flex items-center justify-center space-x-2`}
+              >
+                <Layout className="w-5 h-5" />
+                <span>Simple Mode</span>
+              </button>
+              <button
+                onClick={() => setMode('advanced')}
+                className={`flex-1 p-3 rounded-lg ${mode === 'advanced' ? selectedBgColor + ' text-white' : buttonBgColor} transition-colors flex items-center justify-center space-x-2`}
+              >
+                <Sparkles className="w-5 h-5" />
+                <span>Advanced Mode</span>
+              </button>
+            </div>
+            <div className={`mt-4 p-3 rounded-lg ${buttonBgColor}`}>
+              <h4 className="font-medium mb-2">Current Features</h4>
+              <ul className={`text-sm ${descriptionColor} space-y-1`}>
+                <li className="flex items-center">
+                  <span className="w-4 h-4 rounded-full bg-green-500 mr-2"></span>
+                  Essential Features
+                </li>
+                {mode === 'advanced' && (
+                  <>
+                    <li className="flex items-center">
+                      <span className="w-4 h-4 rounded-full bg-green-500 mr-2"></span>
+                      Advanced Interactions
+                    </li>
+                    {config.features.experimental && (
+                      <li className="flex items-center">
+                        <span className="w-4 h-4 rounded-full bg-yellow-500 mr-2"></span>
+                        Experimental Features
+                      </li>
+                    )}
+                  </>
+                )}
+              </ul>
+            </div>
+          </div>
         </div>
 
         <div className={`p-4 rounded-lg border ${borderColor}`}>
@@ -94,9 +147,6 @@ export default function SettingsDialog({
                 </div>
               ))}
             </div>
-            <p className={`mt-4 text-sm ${descriptionColor}`}>
-              Coming soon: Hashnode, Reddit Programming, Stack Overflow, and Lobsters integration!
-            </p>
           </div>
         </div>
 
@@ -154,8 +204,13 @@ export default function SettingsDialog({
           <div>
             <h3 className="font-medium">About</h3>
             <p className={`text-sm ${descriptionColor}`}>
-              HackerHome aggregates content from multiple tech news sources. Currently featuring Hacker News, DEV.to, and GitHub trending repositories, with Product Hunt and Medium coming soon!
+              HackerHome aggregates content from multiple tech news sources, featuring a dual-mode interface for both casual and power users. Currently featuring Hacker News, DEV.to, and GitHub trending repositories, with more sources coming soon!
             </p>
+            {mode === 'simple' && (
+              <p className={`mt-2 text-sm ${descriptionColor}`}>
+                Tip: Switch to Advanced Mode for additional features and customization options.
+              </p>
+            )}
           </div>
         </div>
       </div>

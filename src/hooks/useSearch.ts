@@ -1,13 +1,12 @@
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 
 interface UseSearchOptions<T> {
   items: T[];
   searchFields: (keyof T)[];
+  searchQuery: string;
 }
 
-export function useSearch<T>({ items, searchFields }: UseSearchOptions<T>) {
-  const [searchQuery, setSearchQuery] = useState('');
-
+export function useSearch<T>({ items, searchFields, searchQuery }: UseSearchOptions<T>) {
   const filteredItems = useCallback(() => {
     if (!searchQuery) return items;
 
@@ -21,8 +20,6 @@ export function useSearch<T>({ items, searchFields }: UseSearchOptions<T>) {
   }, [items, searchQuery, searchFields]);
 
   return {
-    searchQuery,
-    setSearchQuery,
     filteredItems: filteredItems()
   };
 }
