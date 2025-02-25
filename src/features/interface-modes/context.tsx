@@ -31,6 +31,8 @@ const InterfaceModeContext = createContext<InterfaceContext>({
   mode: 'simple',
   config: defaultSimpleConfig,
   setMode: () => {},
+  layout: 'list',
+  setLayout: () => {},
 });
 
 export const useInterfaceMode = () => {
@@ -72,8 +74,48 @@ export const InterfaceModeProvider: React.FC<InterfaceModeProviderProps> = ({ ch
     };
   }, []);
 
+  // Track layout independently
+  const [layout, setLayout] = useState<string>(
+    mode === 'simple' ? 'list' : 'grid'
+  );
+  
+  const handleLayoutChange = useCallback((newLayout: string) => {
+    setLayout(newLayout);
+    // Update config with new layout
+    setConfig(prev => ({
+      ...prev,
+      layout: newLayout as any
+    }));
+    // Store layout preference
+    localStorage.setItem('interface-layout', newLayout);
+  }, []);
+  
+  // Initialize layout from localStorage or defaults
+  useEffect(() => {
+    const storedLayout = localStorage.getItem('interface-layout');
+    if (storedLayout) {
+      // For simple mode, only allow 'list'
+      if (mode === 'simple' && storedLayout !== 'list') {
+        setLayout('list');
+      } else if (mode === 'advanced') {
+        // For advanced mode, allow 'list', 'grid' or 'masonry'
+        if (['list', 'grid', 'masonry'].includes(storedLayout)) {
+          setLayout(storedLayout);
+        }
+      }
+    }
+  }, [mode]);
+  
   return (
-    <InterfaceModeContext.Provider value={{ mode, config, setMode: handleModeChange }}>
+    <InterfaceModeContext.Provider 
+      value={{ 
+        mode, 
+        config, 
+        setMode: handleModeChange,
+        layout,
+        setLayout: handleLayoutChange
+      }}
+    >
       {children}
     </InterfaceModeContext.Provider>
   );

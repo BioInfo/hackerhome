@@ -1,7 +1,10 @@
 export type InterfaceMode = 'simple' | 'advanced';
 
+export type SimpleLayout = 'list';
+export type AdvancedLayout = 'list' | 'grid' | 'masonry';
+
 export interface SimpleMode {
-  layout: 'list' | 'compact-grid';
+  layout: SimpleLayout;
   features: {
     essential: true;
     advanced: false;
@@ -14,7 +17,7 @@ export interface SimpleMode {
 }
 
 export interface AdvancedMode {
-  layout: 'grid' | 'masonry' | 'custom';
+  layout: AdvancedLayout;
   features: {
     essential: true;
     advanced: true;
@@ -32,4 +35,6 @@ export interface InterfaceContext {
   mode: InterfaceMode;
   config: ModeConfig;
   setMode: (mode: InterfaceMode) => void;
+  layout: SimpleLayout | AdvancedLayout;
+  setLayout: (layout: string) => void;
 }

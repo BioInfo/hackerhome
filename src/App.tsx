@@ -61,7 +61,8 @@ function HomePage({ sources, searchQuery, isDarkMode, infiniteScrollEnabled }: H
     items: news,
     loading: hnLoading,
     loadMore: loadMoreHN,
-    loadingMore: loadingMoreHN
+    loadingMore: loadingMoreHN,
+    hasMore: hnHasMore
   } = useNewsSource<NewsItem>({
     fetchFn: fetchHNStoriesCallback,
     enabled: hnEnabled,
@@ -73,7 +74,8 @@ function HomePage({ sources, searchQuery, isDarkMode, infiniteScrollEnabled }: H
     items: devToArticles,
     loading: devToLoading,
     loadMore: loadMoreDevTo,
-    loadingMore: loadingMoreDevTo
+    loadingMore: loadingMoreDevTo,
+    hasMore: devToHasMore
   } = useNewsSource<NewsItem>({
     fetchFn: fetchDevToArticlesCallback,
     enabled: devToEnabled,
@@ -85,7 +87,8 @@ function HomePage({ sources, searchQuery, isDarkMode, infiniteScrollEnabled }: H
     items: repos,
     loading: githubLoading,
     loadMore: loadMoreGithub,
-    loadingMore: loadingMoreGithub
+    loadingMore: loadingMoreGithub,
+    hasMore: githubHasMore
   } = useNewsSource<GithubRepo>({
     fetchFn: fetchTrendingReposCallback,
     enabled: githubEnabled,
@@ -158,6 +161,8 @@ function HomePage({ sources, searchQuery, isDarkMode, infiniteScrollEnabled }: H
                     { value: 'job', label: 'Jobs' }
                   ]}
                   onItemClick={handleItemClick}
+                  loadMore={loadMoreHN}
+                  hasMore={hnHasMore}
                 />
               </div>
             </Suspense>
@@ -187,6 +192,8 @@ function HomePage({ sources, searchQuery, isDarkMode, infiniteScrollEnabled }: H
                     { value: 'rising', label: 'Rising' }
                   ]}
                   onItemClick={handleItemClick}
+                  loadMore={loadMoreDevTo}
+                  hasMore={devToHasMore}
                 />
               </div>
             </Suspense>
@@ -210,6 +217,8 @@ function HomePage({ sources, searchQuery, isDarkMode, infiniteScrollEnabled }: H
                   timeRange={timeRange}
                   onTimeRangeChange={setTimeRange}
                   onItemClick={handleItemClick}
+                  onLoadMore={loadMoreGithub}
+                  hasMore={githubHasMore}
                 />
               </div>
             </Suspense>
@@ -293,10 +302,36 @@ interface NewsGridProps {
   feed?: string;
   onFeedChange?: (feed: any) => void;
   feedOptions?: { value: string; label: string }[];
+  hasMore?: boolean;
   onItemClick?: (url: string) => void;
 }
 
-function NewsGrid({ source, items, loading, loadingMore, searchQuery, isDarkMode, isActive, onSectionClick, infiniteScrollEnabled, scrollRef, feed, onFeedChange, feedOptions, onItemClick }: NewsGridProps) {
+interface LoadMoreFn {
+  (): void;
+}
+
+interface ExtendedNewsGridProps extends NewsGridProps {
+  loadMore?: LoadMoreFn;
+}
+
+function NewsGrid({ 
+  source, 
+  items, 
+  loading, 
+  loadingMore, 
+  searchQuery, 
+  isDarkMode, 
+  isActive, 
+  onSectionClick, 
+  infiniteScrollEnabled, 
+  scrollRef, 
+  feed, 
+  onFeedChange, 
+  feedOptions, 
+  onItemClick,
+  loadMore,
+  hasMore
+}: ExtendedNewsGridProps) {
   if (!source.enabled) return null;
 
   return (
@@ -316,6 +351,8 @@ function NewsGrid({ source, items, loading, loadingMore, searchQuery, isDarkMode
         onFeedChange={onFeedChange}
         feedOptions={feedOptions}
         onItemClick={onItemClick}
+        onLoadMore={loadMore}
+        hasMore={hasMore}
       />
     </div>
   );

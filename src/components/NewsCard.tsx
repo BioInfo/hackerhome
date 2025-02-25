@@ -24,14 +24,14 @@ const SimpleNewsCard: React.FC<NewsCardProps> = ({
   return (
     <div 
       onClick={onClick}
-      className={getClassName('card', `${interactionStyles.simple.hover} cursor-pointer`)}
+      className={getClassName('card', `${interactionStyles.simple.hover} cursor-pointer py-2 px-3`)}
     >
-      <div className="flex flex-col h-full">
-        <h3 className={`${textColor} font-medium ${getClassName('text')} mb-2 line-clamp-2`}>{title}</h3>
-        <div className={`flex items-center justify-between mt-auto ${getClassName('text')} ${metaTextColor}`}>
-          <span className="font-medium">{source}</span>
-          <span className="flex items-center">
-            <Clock className="w-3 h-3 mr-1" />
+      <div className="flex flex-col h-full gap-1">
+        <h3 className={`${textColor} font-medium text-sm ${getClassName('text')} line-clamp-2`}>{title}</h3>
+        <div className={`flex items-center justify-between ${getClassName('text')} ${metaTextColor} text-xs`}>
+          <span className="font-medium truncate max-w-[100px]">{source}</span>
+          <span className="flex items-center shrink-0">
+            <Clock className="w-3 h-3 mr-1 opacity-60" />
             {timeAgo}
           </span>
         </div>

@@ -15,7 +15,9 @@ interface GithubSectionProps {
   scrollRef: React.RefObject<HTMLDivElement>;
   timeRange: string;
   onTimeRangeChange: (range: string) => void;
+  onLoadMore?: () => void;
   onItemClick?: (url: string) => void;
+  hasMore?: boolean;
 }
 
 export default function GithubSection({
@@ -30,9 +32,10 @@ export default function GithubSection({
   scrollRef,
   timeRange,
   onTimeRangeChange,
-  onItemClick
+  onItemClick,
+  onLoadMore,
+  hasMore = true
 }: GithubSectionProps) {
-  const bgColor = isDarkMode ? 'bg-gray-800' : 'bg-white';
   const textColor = isDarkMode ? 'text-white' : 'text-gray-900';
   const borderColor = isDarkMode ? 'border-gray-700' : 'border-gray-200';
 
@@ -42,6 +45,13 @@ export default function GithubSection({
       onItemClick(url);
     } else if (url) {
       window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  const handleLoadMore = () => {
+    if (onLoadMore && infiniteScrollEnabled && hasMore && !loading && !loadingMore) {
+      console.log('Load more triggered for GitHub section');
+      onLoadMore();
     }
   };
 
@@ -92,8 +102,8 @@ export default function GithubSection({
             </div>
           ))
         )}
-        {!loading && !searchQuery && infiniteScrollEnabled && (
-          <div ref={scrollRef} className="h-10" />
+        {!loading && !searchQuery && infiniteScrollEnabled && hasMore && (
+          <div ref={scrollRef} className="h-10" onClick={handleLoadMore} />
         )}
         {loadingMore && !searchQuery && (
           Array.from({ length: 2 }).map((_, i) => (
